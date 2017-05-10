@@ -132,6 +132,10 @@ spec:
         tier: web
     spec:
       restartPolicy: Always
+      volumes:
+       - name: pv-dags
+         persistentVolumeClaim:
+          claimName: claim0001
       containers:
       - name: web
         image: mumoshu/kube-airflow:1.7.1.3-1.3.0
@@ -142,6 +146,9 @@ spec:
         - name: web
           containerPort: 8080
         args: ["webserver"]
+        volumeMounts:
+        - mountPath: /usr/local/airflow/dags
+          name: pv-dags
 ---
 apiVersion: extensions/v1beta1
 kind: Deployment
@@ -183,15 +190,20 @@ spec:
         tier: scheduler
     spec:
       restartPolicy: Always
+      volumes:
+       - name: pv-dags
+         persistentVolumeClaim:
+          claimName: claim0001
       containers:
       - name: scheduler
         image: mumoshu/kube-airflow:1.7.1.3-1.3.0
-        # volumes:
-        #     - /localpath/to/dags:/usr/local/airflow/dags
         env:
         - name: AIRFLOW_HOME
           value: "/usr/local/airflow"
         args: ["scheduler", "-n", "5"]
+        volumeMounts:
+        - mountPath: /usr/local/airflow/dags
+          name: pv-dags
 ---
 apiVersion: extensions/v1beta1
 kind: Deployment
@@ -206,12 +218,17 @@ spec:
         tier: worker
     spec:
       restartPolicy: Always
+      volumes:
+       - name: pv-dags
+         persistentVolumeClaim:
+          claimName: claim0001
       containers:
       - name: worker
         image: mumoshu/kube-airflow:1.7.1.3-1.3.0
-        # volumes:
-        #     - /localpath/to/dags:/usr/local/airflow/dags
         env:
         - name: AIRFLOW_HOME
           value: "/usr/local/airflow"
         args: ["worker"]
+        volumeMounts:
+        - mountPath: /usr/local/airflow/dags
+          name: pv-dags
